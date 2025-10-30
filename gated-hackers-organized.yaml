@@ -1,0 +1,95 @@
+id: gated-hackers-organized
+name: Gated Hackers Organized
+summary: The standard Hackers Organized demo
+name_template: "${project_name}"
+details: |
+  This scenario creates the classic Hackers Organized demo. It creates a new repo from the template that you can then demo the component and workflow creation process.
+  Optionally, you can tell it to pre-run either of those steps so you are left with the final result.
+
+  This scenario will generate a new environment for you and map it to the deployment.
+  You can optionally use an existing environment to reuse it across apps (note that the cleanup process deletes the environment).
+
+required_properties:
+  - JENKINS_URL
+  - JENKINS_JOB
+  - DOCKER_USER
+  - WES_1Time_Bypass
+  - WES_1Time_Exception
+required_secrets:
+  - GH_TOKEN
+  - DOCKER_TOKEN
+  - SNYK_ORGNAME
+  - SNYK_TOKEN
+  - KUBECONFIG
+  - JENKINS_USERNAME
+  - JENKINS_TOKEN
+  - SONAR_USER
+  - SONAR_TOKEN
+
+repositories:
+  - source: cloudbees-days/hackers-source-ng
+    target_org: "${target_org}"
+    repo_name_template: "${project_name}"
+    create_component: "${create_component}"
+    replacements:
+      "PROJECT_NAME": "${project_name}"
+      "ORG_NAME": "${target_org}"
+      "REPLACE_ME_ENV": "${environment_name}"
+      "REPLACE_ME_USE_VPC": "${env.USE_VPC}"
+      "REPLACE_ME_FM_INSTANCE": "${env.FM_INSTANCE}"
+      "REPLACE_ME_ENDPOINT_ID": "${env.ENDPOINT_ID}"
+    files_to_modify:
+      - README.md
+      - workflow.yaml
+    conditional_file_operations:
+      - condition_parameter: auto_setup_workflow
+        operation: move
+        when_true:
+          workflow.yaml: .cloudbees/workflows/workflow.yaml
+applications:
+  - name: "hackers-organized"
+    environments:
+      - "${environment_name}"
+    is_shared: true
+environments:
+  - name: "${environment_name}"
+    env:
+      - name: "namespace"
+        value: "${environment_name}"
+    create_fm_token_var: true
+    flags:
+      - "default.score"
+flags:
+  - name: "default.score"
+    type: boolean
+computed_variables:
+  environment_name:
+    default_from: custom_environment
+    fallback_template: "${project_name}-prod"
+parameter_schema:
+  properties:
+    project_name:
+      type: string
+      pattern: "^[a-z0-9-]+$"
+      description: The name of the project (lowercase, alphanumeric with hyphens)
+      placeholder: "e.g., hackers-organized-sept"
+    target_org:
+      type: string
+      pattern: "^[a-z0-9-]+$"
+      description: The GitHub organization to create the repository in
+    create_component:
+      type: boolean
+      default: false
+      description: Create Unify component for the repository
+    custom_environment:
+      type: string
+      pattern: "^[a-z0-9-]+$"
+      description: Custom environment name (optional, will generate new one if not provided)
+      placeholder: "e.g., hackers-organized-sept-prod"
+    auto_setup_workflow:
+      type: boolean
+      default: false
+      description: Setup the workflow in Unify automatically
+  required:
+    - project_name
+    - target_org
