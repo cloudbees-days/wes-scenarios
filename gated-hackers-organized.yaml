@@ -38,6 +38,7 @@ repositories:
       "REPLACE_ME_USE_VPC": "${env.USE_VPC}"
       "REPLACE_ME_FM_INSTANCE": "${env.FM_INSTANCE}"
       "REPLACE_ME_ENDPOINT_ID": "${env.ENDPOINT_ID}"
+      "REPLACE_ME_ORG_ID": "${organization_id}"
     files_to_modify:
       - README.md
       - workflow.yaml
